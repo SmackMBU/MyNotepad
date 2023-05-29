@@ -3,6 +3,10 @@ package ru.smackmbu.mynotepad;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 
 import java.io.*;
@@ -38,45 +42,82 @@ public class NotepadController implements Initializable {
     @FXML
     private TextArea textArea;
 
+    final KeyCombination cs = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN);
+    final KeyCombination cn = new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_DOWN);
+    final KeyCombination co = new KeyCodeCombination(KeyCode.O, KeyCombination.CONTROL_DOWN);
+    final KeyCombination css = new KeyCodeCombination(KeyCode.S, KeyCombination.CONTROL_DOWN, KeyCombination.SHIFT_DOWN);
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        openButton.setOnAction(actionEvent -> {
-            file = openFile();
-            if(file != null){textArea.setText(readFile(file));}
-        });
+        openButton.setOnAction(actionEvent -> openButton());
 
-        saveButton.setOnAction(actionEvent -> {
-            if(file == null){ file = saveAsFile(); }
-            if(file != null) { writeFile(file, textArea.getText()); }
-        });
+        saveButton.setOnAction(actionEvent -> saveButton());
 
-        saveAsButton.setOnAction(actionEvent -> {
-            File f = saveAsFile();
-            if(file == null){
-                file = f;
+        saveAsButton.setOnAction(actionEvent -> saveAsButton());
+
+        closeButton.setOnAction(actionEvent -> closeButton());
+
+        newButton.setOnAction(actionEvent -> newButton());
+
+        quitButton.setOnAction(actionEvent -> quitButton());
+
+        textArea.addEventFilter(KeyEvent.KEY_PRESSED, handler -> {
+            if(cs.match(handler)){
+                saveButton();
+            }else if(cn.match(handler)){
+                newButton();
+            }else if(co.match(handler)){
+                openButton();
+            }else if(css.match(handler)){
+                saveAsButton();
             }
-            if(f != null) {
-                writeFile(f, textArea.getText());
-                NotepadApplication.myStage.setTitle(file.getPath());
-            }
-        });
-
-        closeButton.setOnAction(actionEvent -> {
-            file = null;
-            textArea.setText("");
-            NotepadApplication.myStage.setTitle("MyNotepad");
-        });
-
-        newButton.setOnAction(actionEvent -> file = saveAsFile());
-
-        quitButton.setOnAction(actionEvent -> {
-            if(!readFile(file).equals(textArea.getText())){
-                quit();
-            }else{ NotepadApplication.myStage.close(); }
         });
 
         aboutButton.setOnAction(actionEvent -> about());
+    }
+
+    public void newButton(){
+        file = saveAsFile();
+        if(!file.exists()){
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    public void quitButton(){
+        if(!readFile(file).equals(textArea.getText())){
+            quit();
+        }else{ NotepadApplication.myStage.close(); }
+    }
+    public void openButton(){
+        file = openFile();
+        if(file != null){textArea.setText(readFile(file));}
+    }
+
+    public void saveButton(){
+        if(file == null){ file = saveAsFile(); }
+        if(file != null) { writeFile(file, textArea.getText()); }
+    }
+
+    public void saveAsButton(){
+        File f = saveAsFile();
+        if(file == null){
+            file = f;
+        }
+        if(f != null) {
+            writeFile(f, textArea.getText());
+            NotepadApplication.myStage.setTitle(file.getPath());
+        }
+    }
+
+    public void closeButton(){
+        file = null;
+        textArea.setText("");
+        NotepadApplication.myStage.setTitle("MyNotepad");
     }
 
     public File openFile(){
