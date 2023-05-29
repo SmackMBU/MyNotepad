@@ -32,7 +32,7 @@ public class NotepadController implements Initializable {
     private MenuItem saveButton;
 
     @FXML
-    private MenuItem saveasButton;
+    private MenuItem saveAsButton;
 
 
     @FXML
@@ -47,12 +47,12 @@ public class NotepadController implements Initializable {
         });
 
         saveButton.setOnAction(actionEvent -> {
-            if(file == null){ file = saveasFile(); }
+            if(file == null){ file = saveAsFile(); }
             if(file != null) { writeFile(file, textArea.getText()); }
         });
 
-        saveasButton.setOnAction(actionEvent -> {
-            File f = saveasFile();
+        saveAsButton.setOnAction(actionEvent -> {
+            File f = saveAsFile();
             if(file == null){
                 file = f;
             }
@@ -68,7 +68,7 @@ public class NotepadController implements Initializable {
             NotepadApplication.myStage.setTitle("MyNotepad");
         });
 
-        newButton.setOnAction(actionEvent -> file = saveasFile());
+        newButton.setOnAction(actionEvent -> file = saveAsFile());
 
         quitButton.setOnAction(actionEvent -> {
             if(!readFile(file).equals(textArea.getText())){
@@ -89,7 +89,7 @@ public class NotepadController implements Initializable {
         return f;
     }
 
-    public File saveasFile(){
+    public File saveAsFile(){
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Saving");
         File f = fileChooser.showSaveDialog(NotepadApplication.myStage);
@@ -105,28 +105,24 @@ public class NotepadController implements Initializable {
             try (FileOutputStream fos = new FileOutputStream(file)) {
                 byte[] buffer = text.getBytes();
                 fos.write(buffer, 0, buffer.length);
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
     }
     public String readFile(File file){
-        String text = "";
+        StringBuilder text = new StringBuilder();
         if(file != null) {
             try (FileInputStream fis = new FileInputStream(file)) {
                 int i;
                 while ((i = fis.read()) != -1) {
-                    text = text + (char) i;
+                    text.append((char) i);
                 }
-            } catch (FileNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
-        return text;
+        return text.toString();
     }
     public void quit(){
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -142,7 +138,7 @@ public class NotepadController implements Initializable {
         if(result.isPresent()) {
             if (result.get() == buttonTypeOne) {
                 if (file == null) {
-                    file = saveasFile();
+                    file = saveAsFile();
                 }
                 writeFile(file, textArea.getText());
                 NotepadApplication.myStage.close();
